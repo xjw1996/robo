@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--*******************************
+*	sample lanunch
+***********************************-->
+
+<launch>
+  <master auto="start"/>
+  <!-- cpp -->
+  <arg name="waypoint_path" default="/home/kyou/catkin_ws/src/waypoint/data/waypoint.txt"/>
+  <arg name="rewaypoint_path" default="/home/kyou/catkin_ws/src/waypoint/data/rewaypointbb.txt"/>
+  <arg name="remap_path" default="/home/kyou/catkin_ws/src/waypoint/data/remap.yaml" />
+  <node pkg="map_server" type="map_server" name="map" args="$(arg remap_path)"/>
+  <node name="waypoint_pub" pkg="waypoint_pkg" type="waypoint_pub" output="screen">
+    <param name="read_file" value="$(arg rewaypoint_path)"/>
+  </node>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d /home/kyou/catkin_ws/src/waypoint/waypub.rviz"/>
+</launch>

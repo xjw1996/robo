@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--*******************************
+*	sample lanunch
+***********************************-->
+
+<launch>
+  <master auto="start"/>
+  <!-- cpp -->
+  <arg name="waypoint_path" default="/home/kuaro/catkin_ws/src/waypoint/data/waypoint.txt"/>
+  <arg name="rewaypoint_path" default="/home/kuaro/catkin_ws/src/waypoint/data/rewaypointbb.txt"/>
+  <arg name="remap_path" default="/home/kuaro/catkin_ws/src/waypoint/data/remap.yaml" />
+  <node pkg="map_server" type="map_server" name="map" args="$(arg remap_path)"/>
+  <node name="wayp_edit" pkg="waypoint_pkg" type="wayp_edit" output="screen">
+    <param name="read_file_name" value="$(arg waypoint_path)"/>
+    <param name="write_file_name" value="$(arg rewaypoint_path)"/>
+    <param name="pose_topic_name" value="/initialpose"/>
+    <param name="order_string_name" value="/some_word"/>
+  </node>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d /home/kuaro/catkin_ws/src/waypoint/waypoint.rviz"/>
+</launch>
