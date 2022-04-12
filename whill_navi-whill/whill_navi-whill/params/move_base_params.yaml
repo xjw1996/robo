@@ -1,0 +1,41 @@
+# Move base node parameters. For full documentation of the parameters in this file, please see
+#
+#  http://www.ros.org/wiki/move_base
+#
+base_global_planner: carrot_planner/CarrotPlanner #global_planner/GlobalPlanner
+base_local_planner: teb_local_planner/TebLocalPlannerROS
+
+recovery_behaviors: [{name: move_slow_and_clear, type: move_slow_and_clear/MoveSlowAndClear}, {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery},  {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery},{name: rotate_recovery, type: rotate_recovery/RotateRecovery}]
+
+# ロボットベースに速度コマンドを与えるコントロール繰り返しの周期 (Hz単位)
+controller_frequency: 5.0 #3.0 #10.0
+
+# スペースクリア操作が実行される前に、プランナーが有効なプランを見つけようとして秒単位で待機する時間。
+planner_patience: 2.0
+
+# スペースクリア操作が実行される前に、コントローラーが有効な制御を受け取らずに秒単位で待機する時間。
+controller_patience: 4.0
+
+#ロボットからの距離（メートル単位）。これを超えると、マップ内のスペースをクリアしようとしたときに、
+#コストマップから障害物がクリアされます。このパラメーターは、move_baseにデフォルトの
+#リカバリー動作が使用されている場合にのみ使用されることに注意してください。
+conservative_reset_dist: 2.0 #2.0
+
+# 大域計画の繰り返し周期 (Hz単位)
+planner_frequency: 0.0 #0.0
+
+# 回復行動 (軌道計画に失敗した時の行動)を実行する前に、ロボットが行ったり来たりすることを可能にする時間
+oscillation_timeout: 0.0
+
+# この距離を移動した場合、oscillation_timeoutは初期化される。
+oscillation_distance: 0.5
+
+#move_baseリカバリ動作を有効にしてスペースをクリアしようとするかどうか。
+recovery_behavior_enabled: true
+#スペースを空けようとするときに、ロボットがインプレース回転を試みるかどうかを決定します。 
+#注：このパラメーターは、デフォルトのリカバリー動作が使用されている場合にのみ使用されます。
+#つまり、ユーザーは、recovery_behaviorsパラメーターをカスタムに設定していません。
+clearing_rotation_allowed: true
+# move_baseが無効な場合costmapノードを停止させるかの選択 : default false
+shutdown_costmaps: false
+

@@ -1,0 +1,20 @@
+plugins: 
+    - {name: obstacles,        type: "costmap_2d::ObstacleLayer"}
+    - {name: inflation,        type: "costmap_2d::InflationLayer"}
+obstacles:
+    observation_sources: back_scan velo_scan
+    #expected_update_rate センサーからの読み取りを数秒で期待する頻度。 値が0.0の場合、読み取りの間隔は無限になります。 このパラメーターは、センサーに障害が発生したときに
+    #ナビゲーションスタックがロボットに命令しないようにするためのフェイルセーフとして使用されます。 これは、センサーの実際のレートよりも少し許容範囲が広い値に設定する必要があります。 
+    #たとえば、0.05秒ごとにレーザーからのスキャンが予想される場合、このパラメーターを0.1秒に設定して、十分なバッファーを提供し、システムの待ち時間をある程度考慮します。
+    back_scan: {data_type: LaserScan, sensor_frame: laser_back, clearing: true, marking: true, topic: /scan_back ,expected_update_rate: 0.0 , inf_is_valid: true}
+    velo_scan: {data_type: LaserScan, sensor_frame: velodyne, clearing: true, marking: true, topic: /velodyne_scan ,expected_update_rate: 0.0 , inf_is_valid: true}
+    max_obstacle_height: 0.8
+    obstacle_range: 65 #5.0 #8.5
+    raytrace_range: 65 #6.0 #10.0
+    track_unknown_space: false
+    footprint_clearing_enabled: false
+    combination_method: 0
+inflation:
+    # インフレーション領域 (ロボットの近傍領域)を表す円の半径で、障害物へ接近させないようにするパラメータ #0.30
+    inflation_radius: 0.70 #0.3 # 1.0 #0.1 #1.5
+    cost_scaling_factor: 2.0 #10.0 #10.0 0.05 #0.0

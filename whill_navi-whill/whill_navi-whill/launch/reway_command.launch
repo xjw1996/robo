@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+
+  <node name="wayp_command" pkg="waypoint_pkg" type="wayp_command" output="screen">
+    <param name="topic_name" value="/some_word"/>
+  </node>
+  
+</launch>

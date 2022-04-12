@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+
+<launch>
+
+<!-- 外部から変更する変数 -->
+  <!-- 使用するlaunch-->
+  <arg name="launch_name" />
+  <arg name="make_dir_flag"/>
+
+<!-- 定数の設定 いじらないってこと -->
+  <!-- pathを設定 -->
+  <arg name="tsukuba_path" default="$(find whill_navi)/full_data/tsukuba"/>
+  <arg name="nakanoshima_path" default="$(find whill_navi)/full_data/nakanoshima"/>
+
+
+
+<!-- ↓↓↓↓↓↓↓変更するポイント↓↓↓↓↓↓↓　-->
+
+<!-- ここを変更するだけ-->
+<!-- 変数の設定 外部からも指定して変更するといい-->
+  <!-- 今日の日付 -->
+  <arg name="date" default="1128"/>
+  <!-- データの名前(練習1など。。。) -->
+  <arg name="data_name" default="return_to_the_goal"/>
+  <!-- 今回の使用するpath (中之5orつくば)-->
+  <arg name="thistime_path" default="$(arg nakanoshima_path)"/>
+　　<!-- mapの名前 -->
+  <arg name="map_name" default="map"/>
+　　<!-- bagの名前 -->
+  <arg name="bag_name" default="bag_test"/>
+　　<!-- waypointの名前 -->
+  <arg name="waypoint_name" default="waypoint"/>
+　　<!-- branchpointの名前 -->
+  <arg name="branchpoint_name" default="branchpoint"/>
+　　<!-- branchpoint_indexの名前 -->
+  <arg name="branchpoint_index_name" default="branchpoint_index"/>
+
+<!-- ↑↑↑↑↑↑↑変更するポイント↑↑↑↑↑↑↑　-->
+
+
+　　<!-- 最終的に使うパス -->
+  <arg name="base_path" default="$(arg thistime_path)/$(arg date)/$(arg data_name)"/>
+
+  <group if="$(arg make_dir_flag)">
+    <!-- python -->
+    <node name="make_dir_py" pkg="2020_ogimachi" type="make_dir.py" output="screen">
+      <param name="make_base_path" value="$(arg base_path)" />
+    </node>
+  </group>
+
+<!-- 使用するlaunchを呼び出す-->
+  <include file="$(find whill_navi)/launch/main_launch/$(arg launch_name)">
+    <!-- マップ用のパス-->
+    <arg name="map_path" default="$(arg base_path)/map/$(arg map_name)"/>
+    <!-- 修正したマップ用のパス-->
+    <arg name="remap_path" default="$(arg base_path)/remap/re$(arg map_name).yaml"/>
+    <!-- waypointのパス-->
+    <arg name="waypoint_path" default="$(arg base_path)/waypoint/$(arg waypoint_name).txt"/>
+    <!-- 修正したwaypointのパス-->
+    <arg name="rewaypoint_path" default="$(arg base_path)/rewaypoint/re$(arg waypoint_name).txt"/>
+    <!-- branchpointのパス-->
+    <arg name="branchpoint_path" default="$(arg base_path)/branchpoint/$(arg branchpoint_name).txt"/>
+    <!-- 最終的なwaypointのパス-->
+    <arg name="finalwaypoint_path" default="$(arg base_path)/finalwaypoint/final$(arg waypoint_name).txt"/>
+    <!-- branchpointのwaypointでのindexのパス-->
+    <arg name="branchpoint_index_path" default="$(arg base_path)/branchpoint_index/$(arg branchpoint_index_name).txt"/>
+    <!-- データ収集bag用のパス-->
+    <arg name="data_gather_bag_path" default="$(arg base_path)/data_gather_bagfile/$(arg bag_name).bag"/>
+    <!-- 本番bag用のパス-->
+    <arg name="production_bag_path" default="$(arg base_path)/production_bagfile/production_$(arg bag_name).bag"/>
+  </include>
+
+</launch>

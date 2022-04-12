@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+  <!-- 外部変更するための変数  ここでは使わないものもあるが変更するな-->
+  <!-- マップ用のパス-->
+  <arg name="map_path" />
+  <!-- 修正したマップ用のパス-->
+  <arg name="remap_path" />
+  <!-- waypointのパス-->
+  <arg name="waypoint_path" />
+  <!-- 修正したwaypointのパス-->
+  <arg name="rewaypoint_path" />
+  <!-- branchpointのパス-->
+  <arg name="branchpoint_path"/>
+  <!-- 最終的なwaypointのパス-->
+  <arg name="finalwaypoint_path"/>
+  <!-- branchpointのwaypointでのindexのパス-->
+  <arg name="branchpoint_index_path"/>
+  <!-- データ収集bag用のパス-->
+  <arg name="data_gather_bag_path" />
+  <!-- 本番bag用のパス-->
+  <arg name="production_bag_path" />
+  <node name="soundplay_node" pkg="sound_play" type="soundplay_node.py"/>
+  <!-- navigation to person -->
+  <arg name="sound_folda_path" default="$(find whill_navi)/data"/>
+  <node name="waypoint_pub" pkg="waypoint_pkg" type="waypoint_pub" output="screen">
+    <param name="read_file" value="$(arg rewaypoint_path)"/>
+  </node>
+  <!--<node pkg="2019_autonomous_mobile_robot" type="person_manager" name="person_manager" output="screen">-->
+  <node pkg="ogimachi_navi" type="ogimachi_navi" name="ogimachi_navi" output="screen">
+    <param name="read_file" value="$(arg rewaypoint_path)"/>
+    <param name="change_distance" value="1.5"/>
+    <param name="Arrive_distance" value="0.3"/>
+    <param name="Gomi_Wait_Time" value="8.0"/>
+    <param name="start_point" value="93"/>
+    <param name="Before_Gomi_Wait_Time_" value="5.0"/>
+    <param name="person_dist" value="0.5"/>
+    <param name="sub_object_topic" value="/yolo_object"/>
+    <param name="gomi_list" value="Bento Can Bottle"/>
+    <param name="signal_list" value="green_signal"/>
+    <param name="Signal_Wait_Time_" value="30.0"/>
+    <param name="Before_Signal_Wait_Time_" value="8.0"/>
+    <param name="sound_list" value="$(arg sound_folda_path)/Find_bento.wav $(arg sound_folda_path)/find_can.wav $(arg sound_folda_path)/find_petbottle.wav"/>
+    <param name="person_name" value="jacket"/>
+  </node>
+</launch>

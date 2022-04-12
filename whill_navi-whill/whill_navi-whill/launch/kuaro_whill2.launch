@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="model" default="$(find ros_whill)/xacro/modelc.xacro" />
+    <arg name="gui" default="true" />
+
+    <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+  
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+        <remap from="/joint_states" to="/whill/states/jointState" />
+    </node>
+
+    <arg name="serialport" default="$(env TTY_WHILL)"/>
+    <!--arg name="serialport" default="/dev/ttyUSB0"/-->
+
+    <node pkg="ros_whill" type="ros_whill" name="whill" output="screen" respawn="true" >
+
+        <!-- Initial Speed Profile -->
+        <rosparam file="$(find ros_whill)/params/fast.yaml" command="load" /> <!-- WHILL の速度の設定 -->
+
+        <!-- Keep Connected: If you specify true,ros_whill try to keep connection by re-opening port and sending power on command.
+             If you'd like to turn WHILL off by command or manually while using ros_whill, set value to false. 
+             Otherwise WHILL automatically turns on.
+         -->
+        <param name="keep_connected" value="true" />
+        <param name="send_interval" value="20"/>
+        <!-- Serial Device name -->
+        <param name="serialport" value="$(arg serialport)"/>
+        <param name="gyro_zero_bias" value="true"/>
+        <!-- Output Odometry tf or not. If other node publishes odom->base_link tf, Change value to "false" -->
+        <param name="publish_tf" value="true"/>  
+    </node>
+  <node pkg="okatech_kuaro" type="whill_joy" name="whill_joy">
+    <param name="scale_angular" value="1.6"/>  <!-- 最高角速度 WHILLの設定に準拠 -->
+    <param name="scale_linear" value="0.8"/>  <!-- 最高速度　WHILLの設定に準拠 -->
+    <param name="buttons_deadman" value="5"/>
+    <param name="axis_linear" value="1"/>
+    <param name="axis_angular" value="0"/>
+    <param name="buttons_stop" value="0"/>
+    <param name="buttons_rotation_R" value="5"/>
+    <param name="buttons_rotation_L" value="2"/>
+    <param name="buttons_straight" value="2"/>
+    <param name="cmd_only" value="true"/>
+    <param name="interval_" value="0.1"/>
+    <remap from="joy_con" to="joy" />
+    <remap from="joy_whill" to="whill/controller/joy" />
+    <!--remap from="cmd_vel" to="" /-->
+  </node>
+  <node pkg="okatech_kuaro" type="WHILL_ODOM"  name="WHILL_ODOM" output="screen">
+    <remap from="joyst" to="whill/states/jointState" />
+  </node>
+</launch>
+

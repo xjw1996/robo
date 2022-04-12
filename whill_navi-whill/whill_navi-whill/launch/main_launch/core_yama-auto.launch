@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+
+<launch>
+
+  <!-- 外部変更するための変数  ここでは使わないものもあるが変更するな-->
+  <!-- マップ用のパス-->
+  <arg name="map_path" />
+  <!-- 修正したマップ用のパス-->
+  <arg name="remap_path" />
+  <!-- waypointのパス-->
+  <arg name="waypoint_path" />
+  <!-- 修正したwaypointのパス-->
+  <arg name="rewaypoint_path" />
+  <!-- branchpointのパス-->
+  <arg name="branchpoint_path"/>
+  <!-- 最終的なwaypointのパス-->
+  <arg name="finalwaypoint_path"/>
+  <!-- branchpointのwaypointでのindexのパス-->
+  <arg name="branchpoint_index_path"/>
+  <!-- データ収集bag用のパス-->
+  <arg name="data_gather_bag_path" />
+  <!-- 本番bag用のパス-->
+  <arg name="production_bag_path" />
+  <arg name="use_ekf_filter" default="false"/>
+
+  <node pkg="yama_project" type="waypoint_pub_y" name="waypoint_pub_y">
+    <param name="read_file" value="$(arg rewaypoint_path)"/>
+  </node>
+  <arg name="data_folda_path" default="$(find yama_project)/data/0302"/>
+  <arg name="data_file_name" default="rein/no9"/>
+  <node name="yama_move" pkg="yama_project" type="yama_move" output='screen'>
+    <param name="GO_FUZY_FLAG"                 value="false"/>
+    <param name="GO_REIN_FLAG"                 value="true"/>
+    <param name="GO_POTE_FLAG"                 value="false"/>
+    <param name="GO_stright_FLAG"              value="false"/>
+    <param name="ID_FLAG"              value="true"/>
+    <param name="pub_interval"                 value="0.3"/>
+    <param name="CENTER_FLAG"                  value="false"/><!-- 本当のロボットの中心を中心とするか(true),車軸の中心を中心とするか(false)  -->>
+    <param name="robot_center_link"            value="base_link"/><!-- ロボットの中心  ex.CENTER_FLAGがtrueの場合 "center_link" falseの場合 "base_link"に設定  -->>
+    <param name="ROBOT_CENTER_DIST"            value="0.26"/> <!-- 車軸の中心とロボットの距離 -->>
+    <param name="MAX_VEL"                      value="0.5"/>  <!-- 最大の並進速度 -->>
+    <param name="MAX_CMD_VEL"                  value="1.4"/>  <!-- 最大の角速度 -->>
+    <param name="FUZY_VEL_FILE"                value="$(find yama_project)/Rules_my2_v.csv"/>
+    <param name="FUZY_ANG_FILE"                value="$(find yama_project)/Rules_my2_th.csv"/>
+    <param name="FUZY_MAX_VEL"                 value="1.0"/>
+    <param name="CMD_VEL_KAKERU"               value="1.0"/> <!-- 実際の角速度司令に与えられる倍率 -->>
+    <param name="MIN_OBS_VEL"                  value="0.0"/>
+    <param name="QN"                           value="-0.02"/><!-- 深層強化学習のパラメーター  -->
+    <param name="REIN_DT"                      value="1.0"/>
+    <param name="KUARO_SIZE"                   value="0.5"/>
+    <param name="POTENSIAL_PARAM_lg"           value="10"/><!-- 10 --><!-- 2 -->
+    <param name="POTENSIAL_PARAM_cg"           value="10"/><!-- 10 --><!-- 1 -->
+    <param name="POTENSIAL_PARAM_lo"           value="1"/><!-- 1 --><!-- 0.4 -->
+    <param name="POTENSIAL_PARAM_co"           value="15"/><!-- 15 --><!-- 3 -->
+    <param name="POTENSIAL_PARAM_drop_uo"      value="20"/>
+    <param name="POTENSIAL_PARAM_vmin"         value="0.1"/>
+    <param name="MAX_GOAL_DISTACE"             value="4.0"/>  <!-- ゴールが更新される距離 -->>
+    <param name="KIDOU_FILE_PATH"              value="$(arg data_folda_path)/$(arg data_file_name).csv"/>
+    <param name="WAY_POINT_FILE"               value="$(arg rewaypoint_path)"/>
+  </node>
+
+</launch>

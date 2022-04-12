@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+
+<launch>
+   <master auto="start"/>
+
+   <!-- 外部変更するための変数  ここでは使わないものもあるが変更するな-->
+  <!-- マップ用のパス-->
+   <arg name="map_path" />
+  <!-- 修正したマップ用のパス-->
+   <arg name="remap_path" />
+  <!-- waypointのパス-->
+   <arg name="waypoint_path" />
+  <!-- 修正したwaypointのパス-->
+   <arg name="rewaypoint_path" />
+  <!-- branchpointのパス-->
+   <arg name="branchpoint_path"/>
+  <!-- 最終的なwaypointのパス-->
+   <arg name="finalwaypoint_path"/>
+  <!-- branchpointのwaypointでのindexのパス-->
+   <arg name="branchpoint_index_path"/>
+  <!-- データ収集bag用のパス-->
+   <arg name="data_gather_bag_path" />
+  <!-- 本番bag用のパス-->
+   <arg name="production_bag_path" />
+  <arg name="use_sim_time" value="true"/>
+
+  <node pkg="rosbag" type="play" name="test_play" args="$(arg data_gather_bag_path) -r 0.6 --clock"/> <!-- 0.6 -->
+
+  <include file="$(find whill_navi)/launch/sensor/pointcloud_to_laserscan.launch"/>
+
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+      <!-- remap  -->
+      <remap from="scan" to="/velodyne_scan"/>
+      <param name="odom_frame" value="odom"/>
+      <param name="base_frame" value="base_link"/>
+      <param name="map_frame" value="map"/>
+      <param name="map_update_interval" value="2.0"/>
+      <param name="maxUrange" value="90.0"/>
+      <param name="sigma" value="0.05"/>
+      <param name="kernelSize" value="1"/>
+      <param name="lstep" value="0.05"/>
+      <param name="astep" value="0.05"/>
+      <param name="iterations" value="10"/>
+      <param name="lsigma" value="0.1"/>
+      <param name="ogain" value="3.0"/>
+      <param name="lskip" value="0"/>
+      <param name="srr" value="0.01"/> <!--Odometry error in translation as a function of translation -->
+      <param name="srt" value="0.02"/> <!--Odometry error in translation as a function of rotation (rho/theta)  -->
+      <param name="str" value="0.01"/> <!--Odometry error in rotation as a function of translation (theta/rho)  -->
+      <param name="stt" value="0.02"/> <!--Odometry error in rotation as a function of rotation (theta/theta)  -->
+      <param name="linearUpdate" value="0.25"/> <!-- ロボットがここまで移動するたびにスキャンを処理します  -->
+      <param name="angularUpdate" value="0.262"/><!--   ロボットがここまで回転するたびにスキャンを処理します -->
+      <param name="temporalUpdate" value="-1.0"/>
+      <param name="resampleThreshold" value="0.5"/> <!-- 0.8 -->
+      <param name="particles" value="100"/> <!-- 40  -->
+      <param name="xmin" value="-100.0"/>
+      <param name="ymin" value="-100.0"/>
+      <param name="xmax" value="100.0"/>
+      <param name="ymax" value="100.0"/>
+      <param name="delta" value="0.1"/>
+      <param name="llsamplerange" value="0.01"/>
+      <param name="llsamplestep" value="0.01"/>
+      <param name="lasamplerange" value="0.005"/>
+      <param name="lasamplestep" value="0.005"/>
+      <param name="maxRange" value="100"/>
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find whill_navi)/rviz/gmap.rviz"/>
+</launch>

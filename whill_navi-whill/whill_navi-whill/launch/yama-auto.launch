@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+
+<!-- 使用するlaunchを呼び出す-->
+  <include file="$(find whill_navi)/launch/play.launch">
+    <arg name="launch_name" default="core_yama-auto.launch"/>
+    <arg name="make_dir_flag" default="false"/>
+  </include>
+  
+</launch>

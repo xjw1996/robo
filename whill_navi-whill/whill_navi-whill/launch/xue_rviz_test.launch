@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find whill_navi)/rviz/navi-test.rviz"/>
+
+
+</launch>

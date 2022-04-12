@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+  <arg name="use_imu_adis"/>
+  <arg name="use_camera"/>
+  <arg name="use_gnss"/>
+  <arg name="use_lrf"/>
+  <arg name="use_velodyne"/>
+  <arg name="imu_port" default="/dev/ttyACM0"/>
+  <arg name="urg_front_port" default="/dev/ttyACM1"/>
+ 
+
+  <!-- imu の角度を角速度、角加速度から計算 -->
+<!--
+  <node name="imu_filter" pkg="imu_filter_madgwick" type="imu_filter_node"   output="screen">
+    <remap from="imu/data_raw" to="/whill/states/imu_base"/>
+    <remap from="imu/data" to="/whill/states/imu_fix"/>
+    <param name="use_mag" value="false"/>
+    <param name="zeta" value="0.0"/> --><!-- Gyro drift gain (approx. rad/s). Range: -1.0 to 1.0 -->
+    <!--<param name="publish_tf" value="false"/>
+    <param name="publish_debug_topics" value="true"/>
+    <param name="stateless" value="false"/>
+    <param name="reverse_tf" value="false"/>
+  </node>
+  <group if="$(arg use_gnss)">
+    <include file="$(find whill_navi)/launch/sensor/ublox_device.launch"/>
+  </group>
+   -->
+   <!--  imu をbase_linkに  -->
+<!--
+  <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer" output="screen">
+    <remap from="imu_in/data" to="/whill/states/imu"/>
+    <remap from="imu_out/data" to="/whill/states/imu_base"/>
+    <param name="target_frame" value="base_link"/>
+  </node>
+   -->
+
+  <group if="$(arg use_imu_adis)">
+    <include file="$(find whill_navi)/launch/sensor/adis16470.launch">
+       <arg name="imu_port"  value="$(arg imu_port)" />
+    </include>
+  </group>
+
+<!--     LRF       -->
+  <group if="$(arg use_lrf)">
+    <!-- urg_node_front  -->
+    <node pkg="urg_node" type="urg_node" respawn="false" name="urg_node_front" output="screen">
+      <!--param name="serial_port" value="/dev/kuaro/lrf_H1523064"/-->
+      <param name="serial_port" value="$(arg urg_front_port)" />
+      <param name="frame_id" value="laser_front"/>
+      <param name="angle_min" value="-1.57"/>
+      <param name="angle_max" value="1.57"/>
+      <remap from="scan" to="scan_front"/>
+    </node>
+  </group>
+
+
+
+
+  <!-- webcamera -->
+  <group if="$(arg use_camera)">
+  <node pkg="uvc_camera" type="uvc_camera_node" name="uvc_camera" output="screen">
+    <param name="width" type="int" value="640" />
+    <param name="height" type="int" value="480" />
+    <param name="fps" type="int" value="10" />
+    <param name="frame" type="string" value="wide_stereo" />
+    <param name="auto_focus" type="bool" value="False" />
+    <param name="focus_absolute" type="int" value="0" />
+    <param name="device" type="string" value="/dev/video4" />
+    <param name="camera_info_url" type="string" value="file://$(find uvc_camera)/example.yaml" />
+  </node>
+  </group>
+
+  <!--     velodyne     -->
+  <group if="$(arg use_velodyne)">
+    <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+      <arg name="device_ip" value=""/>
+      <arg name="frame_id" value="velodyne"/>
+      <arg name="manager" value="velodyne_nodelet_manager" />
+      <arg name="model" value="VLP16"/>
+      <arg name="pcap" value=""/>
+      <arg name="port" value="2368"/>
+      <arg name="read_fast" value="false"/>
+      <arg name="read_once" value="false"/>
+      <arg name="repeat_delay" value="0.0"/>
+      <arg name="rpm" value="600"/>
+    </include>
+    <!-- start cloud nodelet -->
+    <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+      <arg name="model" value="VLP16"/>
+      <arg name="calibration" value="$(find velodyne_pointcloud)/params/VLP-16-HiRes.yaml"/>
+      <arg name="manager" value="velodyne_nodelet_manager" />
+      <arg name="max_range" value="100"/>
+      <arg name="min_range" value="0.5"/>
+    </include>
+  </group>
+
+</launch>

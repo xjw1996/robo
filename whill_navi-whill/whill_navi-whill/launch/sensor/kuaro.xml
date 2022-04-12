@@ -1,0 +1,36 @@
+<robot name="kuaro">
+  <link name="base_link" />
+  <link name="laser_front" />
+  <link name="laser_back" />
+  <link name="gps_base" />]
+  <link name="imu_link" />
+  <link name="velodyne" />
+
+  <joint name="base_lrf_f" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_front"/>
+    <origin xyz="0.15 0 0.315" rpy="0 0 0" />
+  </joint>
+
+  <joint name="base_lrf_b" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_back"/>
+    <origin xyz="-0.44 0 0.185" rpy="0 3.14159 0" />
+  </joint>
+
+  <joint name="base_gps" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps_base"/>
+    <origin xyz="0.0 -0.19 1.07" rpy="0 0 -1.5708" />
+  </joint>
+  <joint name="base_imu" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0.0 -0.16 1.105" rpy="3.14159 0 0" />
+  </joint>
+  <joint name="base_velo" type="fixed">
+    <parent link="base_link"/>
+    <child link="velodyne"/>
+    <origin xyz="0.0 0 1.11" rpy="0 0 0" />
+  </joint>
+</robot>

@@ -1,0 +1,7 @@
+RotateRecovery:
+   sim_granularity: 0.017
+   frequency: 20.0
+TrajectoryPlannerROS:
+   acc_lim_th: 1.2
+   max_rotational_vel: 1.2
+   min_in_place_rotational_vel: 0.4

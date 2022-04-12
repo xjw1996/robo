@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+
+<launch>
+  <node name="scans_merger" pkg="obstacle_detector" type="scans_merger_node">
+    <param name="active"            value="true"/>
+    <param name="publish_scan"      value="false"/>
+    <param name="publish_pcl"       value="true"/>
+    <!--360度レーザースキャンメッセージに含まれる範囲（円形セクター）の数-->
+    <param name="ranges_num"        value="1000"/>
+
+    <param name="min_scanner_range" value="0.0"/>
+    <param name="max_scanner_range" value="10.0"/>
+    <param name="min_x_range"       value="-10.0"/>
+    <param name="max_x_range"       value="10.0"/>
+    <param name="min_y_range"       value="-10.0"/>
+    <param name="max_y_range"       value="10.0"/>
+
+    <param name="fixed_frame_id"   value="map"/>
+    <param name="target_frame_id"   value="base_link"/>
+    <!--remap from="front_scan" to="scan_ira"/-->
+    <remap from="front_scan" to="velodyne_scan"/>
+    <!--remap from="rear_scan" to="scan_back"/-->
+  </node>
+  <node name="obstacle_extractor" pkg="obstacle_detector" type="obstacle_extractor_node">
+    <param name="active"               value="true"/>
+    <param name="use_scan"             value="false"/>
+    <param name="use_pcl"              value="true"/>
+    <!--セグメントの検出に反復エンドポイントフィット（false）またはスプリットアンドマージ（true）アルゴリズムを使用するかどうかを選択する-->
+    <param name="use_split_and_merge"    value="false"/>
+    <!--完全に見える（遮蔽されていない）セグメントからのみ円形の障害物を検出する-->
+    <param name="circles_from_visibles"  value="false"/>
+    <!--サークルが生成されたセグメントを公開しない-->
+    <param name="discard_converted_segments" value="true"/>
+    <!--障害物の座標をframe_idパラメーターで記述されたフレームに変換します-->
+    <param name="transform_coordinates"  value="true"/>
+    <!--さらに処理されるグループを構成するポイントの最小数-->
+    <param name="min_group_points"     value="4"/><!--15 -->
+    <!--2点間の距離がこの値よりも大きい場合、新しいグループを開始します -->
+    <param name="max_group_distance"   value="0.2"/><!--0.4 -->
+    <!--ポイントの範囲に比例してポイント間の許容距離を拡大します（ラジアン単位のスキャン角度増分を使用） -->
+    <param name="distance_proportion"  value="0.003439"/>
+    <!--グループ内のポイントがこの値よりも先行線から遠くにある場合、グループを分割します -->
+    <param name="max_split_distance"   value="0.3"/><!--0.5 -->
+    <!--障害物間の距離がこの値より小さい場合、それらをマージすることを検討してください-->
+    <param name="max_merge_separation" value="0.3"/><!--0.2 -->
+    <!--すべての極値がこの値よりも先頭の線に近くなる場合、2つのセグメントをマージします-->
+    <param name="max_merge_spread"     value="0.3"/><!--0.1 -->
+    <!--円の半径がこの値よりも大きい場合は、スキップし-->
+    <param name="max_circle_radius"    value="0.5"/>
+
+    <param name="radius_enlargement"   value="0.1"/>
+    <param name="min_x_limit"       value="-1000.0"/>
+    <param name="max_x_limit"       value="1000.0"/>
+    <param name="min_y_limit"       value="-1000.0"/>
+    <param name="max_y_limit"       value="1000.0"/>
+
+    <param name="frame_id"             value="map"/>
+  </node>
+
+  <node name="obstacle_tracker" pkg="obstacle_detector" type="obstacle_tracker_node">
+    <param name="active"                  value="true"/>
+
+    <param name="loop_rate"               value="20.0"/>
+    <!--着信データがない場合の障害追跡の期間（最後の対応する測定からのこの時間の後、追跡された障害はリストから削除されます）、-->
+    <param name="tracking_duration"       value="2.0"/>
+    <!--通信テストのしきい値-->
+    <param name="min_correspondence_cost" value="0.6"/>
+    <!--（実験的）通信テストにおける位置楕円の標準偏差-->
+    <param name="std_correspondence_dev"  value="0.15"/>
+    <!--障害物の位置と半径の分散（カルマンフィルターのパラメーター）-->
+    <param name="process_variance"        value="0.1"/>
+    <!--障害物の値の変化率の分散（カルマンフィルターのパラメーター）-->
+    <param name="process_rate_variance"   value="0.1"/>
+    <!--測定された障害物の値の分散（カルマンフィルターのパラメーター）-->
+    <param name="measurement_variance"    value="1.0"/>
+    <param name="frame_id"                value="map"/>
+    <remap from="tracked_obstacles" to="obstacles"/>
+  </node>
+</launch>

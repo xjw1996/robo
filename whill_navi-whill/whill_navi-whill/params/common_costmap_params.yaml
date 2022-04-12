@@ -1,0 +1,15 @@
+publish_frequency: 5
+global_frame: map
+robot_base_frame: base_link
+transform_tolerance: 0.2
+update_frequency: 5
+rolling_window: false
+footprint: [[0.25, 0.35],[0.25, -0.35],[-0.60, -0.35],[-0.60, 0.35]]
+#局所環境地図ウィンドウの横 (メートル)
+width: 30.0 #20.0 #10.0 #8.0
+#局所環境地図ウィンドウの縦 (メートル)
+height: 30.0 #20.0 #10.0 #8.0
+#局所環境地図ウィンドウの解像度 (メートル/セル) # 0.01
+resolution: 0.05 #0.10
+always_send_full_costmap: true
+rolling_window: true

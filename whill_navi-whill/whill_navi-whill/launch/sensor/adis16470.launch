@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="imu_port" default="/dev/kuaro/ttyUSBIMU" />
+  <arg name="with_filter" default="true"/>
+  <arg name="frame_id" default="imu_link"/>
+  <arg name="burst_read" default="false"/>
+  <arg name="publish_temperature" default="true"/>
+  <arg name="rate" default="100"/>
+  <arg name="publish_tf" default="true"/>
+  <arg name="publish_debug_topics" default="true"/>
+
+
+  <group ns="adis">
+    <node name="imu" pkg="adi_driver" type="adis16470_node" output="screen">
+      <param name="device" value="$(arg imu_port)"/>
+      <param name="frame_id" value="$(arg frame_id)"/>
+      <param name="burst_mode" value="$(arg burst_read)"/>
+      <param name="publish_temperature" value="$(arg publish_temperature)"/>
+      <param name="rate" value="$(arg rate)"/>
+    </node>
+  </group>
+
+
+
+  <node if="$(arg with_filter)" name="imu_filter" pkg="imu_filter_madgwick" type="imu_filter_node"   output="screen">
+    <remap from="imu/data_raw" to="adis/imu/data_raw"/>
+    <remap from="imu/data" to="adis/imu/data"/>
+    <param name="use_mag" value="false"/>
+    <param name="publish_tf" value="false"/>
+    <param name="publish_debug_topics" value="$(arg publish_debug_topics)"/>
+    <param name="stateless" value="false"/>
+    <param name="reverse_tf" value="false"/>
+  </node>
+
+
+
+  <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer" output="screen">
+    <remap from="imu_in" to="adis/imu"/>
+    <remap from="imu_out" to="adis/imu_fix"/>
+    <param name="target_frame" value="base_link"/>
+  </node>
+  <!-- Connect sensors before tests -->
+  <test test-name="test_adis16470" pkg="adi_driver" type="test_adis16470.py"/>
+  
+</launch>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+
+
+ 
+  <arg name="data_gather_bag_path" default="/home/yama/zed_bagfile/zed_data.bag"/>
+  <node pkg="rosbag" type="record" name="zed_bag_record" output="screen" args="-O $(arg data_gather_bag_path) /zed2i/zed_node/left_raw/image_raw_color"/>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find whill_navi)/rviz/zedi2.rviz"/>
+
+
+
+  
+</launch>

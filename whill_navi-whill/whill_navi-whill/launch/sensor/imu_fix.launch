@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+  <node pkg="imu_transformer" type="imu_transformer_node" name="imu_data_transformer" output="screen">
+    <remap from="imu_in" to="imu"/>
+    <remap from="imu_out" to="imu_fix"/>
+    <param name="target_frame" value="base_link"/>
+  </node>
+  <!-- Connect sensors before tests -->
+  <test test-name="test_adis16470" pkg="adi_driver" type="test_adis16470.py"/>
+  
+</launch>

@@ -1,0 +1,26 @@
+plugins: 
+    - {name: static_map_1,       type: "costmap_2d::StaticLayer"}
+    - {name: inflation,        type: "costmap_2d::InflationLayer"}
+static_map_1:
+    #マップサーバーからマップを読み取るときに、コストが不明であると見なされる値。 
+    #コストマップが不明なスペースを追跡していない場合、この値のコストは占有されていると見なされます。 
+    #値がゼロの場合も、このパラメーターは使用されません。
+    unknown_cost_value: -1
+    lethal_cost_threshold: 100
+    map_topic: map
+    first_map_only: false
+    #map_topicに加えて、map_topic + "_ updates"にもサブスクライブします
+    subscribe_to_updates: false
+    #trueの場合、マップメッセージの不明な値はレイヤーに直接変換されます。 
+    #それ以外の場合、マップメッセージの不明な値は、レイヤーでFREE_SPACEとして変換されます。
+    track_unknown_space: false
+    #静的レイヤーが最下レイヤーでない場合にのみ重要です。 trueの場合、最大値のみが
+    #マスターコストマップに書き込まれます。
+    use_maximum: false
+    #trueの場合、すべてのマップメッセージ値をNO_INFORMATION / FREE_SPACE / LETHAL_OBSTACLE
+    #（3つの値）に変換します。 falseの場合、中間値の全範囲が可能です。
+    trinary_costmap: true
+inflation:
+    # インフレーション領域 (ロボットの近傍領域)を表す円の半径で、障害物へ接近させないようにするパラメータ #0.30
+    inflation_radius: 1.0 #0.3 # 1.0 #0.1 #1.5
+    cost_scaling_factor: 2.5 #10.0 #10.0 0.05 #0.0

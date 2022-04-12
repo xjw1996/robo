@@ -1,0 +1,288 @@
+TebLocalPlannerROS:
+
+#ロボットドライバーまたはシミュレーターによって提供されるオドメトリーメッセージのトピック名。
+ odom_topic: odom_default #odom_gyro
+
+#グローバル計画フレーム（静的マップの場合、このパラメーターは通常「/ map」に変更する必要があります。
+ map_frame: map
+
+######################## Robot Configuration Parameters ########################
+
+#ベースに許容される最大前進速度（メートル/秒）
+ max_vel_x: 0.4 #0.4 #0.6
+
+#メートル/秒単位で後退している間のロボットの最大絶対並進速度。 最適化パラメーターweight_kinematics_forward_driveを参照してください
+ max_vel_x_backwards: -0.1
+
+#ラジアン/秒でのロボットの最大角速度
+ max_vel_theta: 0.4 #0.4 #0.3 #0.2 #0.3
+
+#ロボットの最大並進加速度（meters/sec^2）
+ acc_lim_x: 0.3 #0.1 #0.3
+
+#ロボットの最大角加速度（radians/sec^2）
+ acc_lim_theta: 0.6 #0.6 # 0.6 #0.3 #0.35
+
+#次のパラメータは、カーライクロボットにのみ関連します。
+
+#カーライクロボットの最小回転半径（デフドライブロボットの場合はゼロに設定）。
+ min_turning_radius: 0.0 # 0.70 #0.0
+
+#後車軸と前車軸の間の距離。 後輪のロボットの場合、値は負になる可能性があります
+#（<name> / cmd_angle_instead_rotvelisがtrueに設定されている場合にのみ必要）。
+ wheelbase: 0.70
+
+#指令速度メッセージの回転速度を、対応するステアリング角度[-pi / 2、pi / 2]で置き換えます。 
+#アプリケーションに応じてヨーレートのセマンティクスを変更することは好ましくありません。 ここでは、ステージシミュレータに必要な入力に準拠しています。 
+#ackermann_msgsのデータ型の方が適切ですが、move_baseではサポートされていません。 ローカルプランナーは、それ自体でコマンドを送信することを目的としていません。
+ cmd_angle_instead_rotvel: false
+
+
+####lineとmin_obstacle_distで調整する
+ footprint_model: # types: "point", "circular", "two_circles", "line", "polygon"
+   type: "line"
+   line_start: [0.60, 0.0] # for type "line" 0.25
+   line_end: [-0.20, 0.0] # for type "line"
+#vertices: [[0.25, 0.35],[0.25, -0.35],[-0.60, -0.35],[-0.60, 0.35]]
+
+#trueの場合、軌道の実現可能性をチェックする前にフットプリントを更新します
+ is_footprint_dynamic: false
+
+
+######################## GoalTolerance ########################
+
+
+#ゴール位置までのメートル単位の最終ユークリッド距離を許可
+ xy_goal_tolerance: 0.2 #1.5 #0.5
+#ラジアンで許可された最終的な方向エラー
+ yaw_goal_tolerance: 0.2 #3.14 !!!
+#ロボットが最大速度でゴールに到達できるように、ゴール速度制約を削除します
+ free_goal_vel: True
+
+
+
+######################## Trajectory Configuration Parameters ########################
+
+ teb_autosize: True
+
+
+#軌道の望ましい時間分解能（時間分解能は最適化の一部であるため、軌道はdt_refに固定されていませんが、
+#dt_ref + -dt_hysteresisに違反すると、軌道は反復間でサイズ変更されます。
+ dt_ref: 0.75 #0.3　#0.5 #0.1
+
+#現在の時間解像度に応じた自動サイズ変更のヒステリシス。通常は約。 dt_refの10％を推奨
+ dt_hysteresis: 0.075 #0.1 #0.05
+
+#サンプルの最小数（常に2より大きい必要があります）
+ min_samples: 3
+
+#グローバルプランナーが提供するローカルサブゴールの方向を上書きします（多くの場合、2Dパスのみを提供するため）。
+ global_plan_overwrite_orientation: True #True #0918 False
+ 
+#正の場合、経由ポイントはグローバルプランから除外されます（パス追跡モード）。 この値は、参照パスの解像度を決定します
+#（負の場合、グローバルプランに沿った2つの連続する経由点間の最小間隔：無効）。 強度の調整については、パラメータweight_viapointを参照してください。
+ global_plan_viapoint_sep: 0.1
+
+#最適化のために考慮されるグローバルプランのサブセットの最大長（累積ユークリッド距離）を指定します。
+# 実際の長さは、ローカルコストマップサイズとこの最大範囲の論理結合によって決定されます。 
+#この制限を無効にするには、ゼロまたは負に設定します。
+ max_global_plan_lookahead_dist: 40.0 #5.0 #3.0
+
+#以前の目標がメートル単位で指定された値を超える間隔で更新された場合、軌道を再初期化します（ホットスタートをスキップ）
+ force_reinit_new_goal_dist: 1.0
+
+#予測されたプランのどのポーズまで実行可能性をサンプリング間隔ごとにチェックするかを指定します。
+ feasibility_check_no_poses: 5
+
+#完全な軌道とアクティブな障害のリストを含むプランナーフィードバックを公開します（評価またはデバッグの場合にのみ有効にする必要があります）。 
+#上記のpublishのリストを参照してください。
+ publish_feedback: False
+
+#問題が自動的に検出された場合（例：実行不可能性）、計画担当者は一時的に地平線を縮小できます（50％）。 
+#パラメータshrink_horizon_min_durationも参照してください。
+ shrink_horizon_backup: true
+
+#trueの場合、ローカルコストマップ内でゴールがスタートの後ろにある場合、
+#基礎となる軌道が逆方向の動きで初期化される可能性があります（これは、ロボットにリアセンサーが装備されている場合にのみ推奨されます）。
+ allow_init_with_backwards_motion: False
+
+#trueの場合、プランナーは速度、加速度、および回転率の計算で正確な弧の長さを使用します（-> CPU時間の増加）。それ以外の場合は、ユークリッド近似が使用されます。
+ exact_arc_length: false
+
+#実行不可能な軌道が検出された場合に備えて、縮小地平線の最小期間を指定します
+#（縮小地平線モードをアクティブ化するには、パラメータshrink_horizon_backupを参照してください）。
+ shrink_horizon_min_duration: 10.0
+
+
+
+######################## Obstacle Parameters ########################
+
+#メートル単位の障害物からの最小の望ましい分離
+ min_obstacle_dist: 0.4 #0.3 #0.8 
+
+#ローカルコストマップの障害を考慮するかどうかを指定します。 
+#障害物としてマークされた各セルは、ポイント障害物と見なされます。 
+#したがって、計算時間が長くなるため、コストマップの非常に小さな解像度を選択しないでください。 
+#将来のリリースでは、この状況に対処するとともに、動的な障害に追加のAPIを提供する予定です。
+ include_costmap_obstacles: True
+
+#ロボットの背後にある計画のために考慮される占有ローカルコストマップ障害を制限します
+#（メートル単位で距離を指定）。
+ costmap_obstacles_behind_robot_dist: 1.0
+
+#各障害物位置は、距離を保つために、軌道上の最も近いポーズにアタッチされます。 
+#追加のネイバーも考慮に入れることができます。 障害物関連付け戦略がkinetic +で変更されたため、
+#このパラメーターは将来のバージョンで削除される可能性があることに注意してください。 
+#legacy_obstacle_associationのパラメーターの説明を参照してください。
+ obstacle_poses_affected: 30
+
+#ペナルティコストがゼロ以外の障害物の周囲のバッファゾーン（効果を発揮するには、min_obstacle_distよりも大きい必要があります）。
+# ウェイトweight_inflationも参照してください。
+ inflation_dist: 0.6
+
+#このパラメーターがtrueに設定されている場合、速度がゼロでない障害物の動き（トピック〜/ obstaclesでユーザー指定の障害物によって提供されるか、
+#costmap_converterから取得される）は、等速モデルによる最適化中に予測および考慮されます。 新着
+ include_dynamic_obstacles: false
+
+#軌道ポーズと障害物を最適化のために接続する戦略が変更されました（変更ログを参照）。 このパラメーターをtrueに設定することにより、
+#古い/以前の戦略に切り替えることができます。 古い戦略：各障害物について、最も近いTEBポーズを見つけます。 新しい戦略：各tebポーズで、「関連する」障害のみを見つけます。
+ legacy_obstacle_association: false
+
+#非レガシー障害物関連付け戦略は、最適化中に、関連する障害物のみを離散化された軌道に接続しようとします。 
+#ただし、指定された距離内のすべての障害物は（min_obstacle_distの倍数として）強制的に含まれます。 
+#例えば。 2.0 * min_obstacle_distの半径内に考慮障害物を強制するには、2.0を選択します。 
+#[このパラメータは、パラメータlegacy_obstacle_associationがfalseの場合にのみ使用されます]
+ obstacle_association_force_inclusion_factor: 1.5
+
+#obstacle_association_force_inclusion_factorを参照してください。ただし、[値] * min_obstacle_distの倍数を超えると、最適化中にすべての障害物が無視されます。
+# 最初に、parameter_association_force_inclusion_factorが処理されます。 [このパラメーターは、パラメーターlegacy_obstacle_associationがfalseの場合にのみ使用されます]
+ obstacle_association_cutoff_factor: 5
+
+
+#####次のパラメータは、costmap_converterプラグインが必要な場合にのみ関連します（チュートリアルを参照）。
+
+#コストマップセルをポイント/ライン/ポリゴンに変換するためにプラグイン名を定義します。 
+#空の文字列を設定して変換を無効にし、すべてのセルが点障害物として扱われるようにします。
+ costmap_converter_plugin: ""
+
+#trueに設定すると、コストマップコンバーターは別のスレッドでコールバックキューを呼び出します。
+ costmap_converter_spin_thread: True
+
+#costmap_converterプラグインが現在のコストマップを処理する頻度を定義するレート
+#（値はコストマップの更新レートよりはるかに高くてはいけません）[Hz]。
+ costmap_converter_rate: 5
+
+
+
+######################## Optimization ########################
+
+#各外部ループ反復で呼び出される実際のソルバー反復の数。 param no_outer_iterationsを参照してください。
+ no_inner_iterations: 5
+
+#外部ループの各反復は、望ましい時間分解能dt_refに従って軌道を自動的にサイズ変更し、
+#内部オプティマイザー（no_inner_iterationsを実行）を呼び出します。 
+#したがって、各計画サイクルにおけるソルバー反復の総数は、両方の値の積になります。
+ no_outer_iterations: 4
+
+#ハード制約近似のペナルティ関数に小さな安全マージンを追加します
+ penalty_epsilon: 0.1
+
+#最大許容並進速度を満たすための最適化の重み
+ weight_max_vel_x: 2
+
+#最大許容角速度を満たすための最適化の重み
+ weight_max_vel_theta: 1
+
+#最大許容並進加速度を満たすための最適化の重み
+ weight_acc_lim_x: 1
+
+#最大許容角加速度を満たすための最適化の重み
+ weight_acc_lim_theta: 1
+
+#非ホロノミックキネマティクスを満たすための最適化の重み（キネマティクス方程式は等式制約を構成するため、
+#このパラメーターは高くなければなりません。1000の値でも、他のコストと比較して小さな「生の」コスト値のために
+#悪いマトリックス条件を意味しません） 。
+ weight_kinematics_nh: 1000
+
+#ロボットに順方向のみを選択させるための最適化の重み（正の並進速度）。 
+#小さい重量（例：1.0）でも後進が可能です。 約1000の値は、後退運転をほぼ防止します
+#（ただし、保証はできません）。
+ weight_kinematics_forward_drive: 1000.0 #1.0
+
+#最小回転半径を強制するための最適化の重み（カーライクロボットのみ）。
+ weight_kinematics_turning_radius: 1
+
+#軌道w.r.t遷移/実行時間を短縮するための最適化の重み
+ weight_optimaltime: 1
+
+#障害物からの最小距離を維持するための最適化の重み
+ weight_obstacle: 50
+
+#経由点（または参照パス）までの距離を最小化するための最適化の重み。 バージョン0.4の新機能
+ weight_dynamic_obstacle: 10
+
+#経由点（または参照パス）までの距離を最小化するための最適化の重み。 バージョン0.4の新機能
+ weight_viapoint: 1.0
+
+#インフレペナルティの最適化の重み（小さくする必要があります）。
+ weight_inflation: 0.1
+
+#一部の特別な重み（現在はweight_obstacle）は、外側のTEB反復ごとにこの係数によって繰り返しスケーリングされます（weight_new = weight_old * factor）。 
+#事前に大きな値を設定するのではなく、重みを繰り返し増加させると、基礎となる最適化問題の数値条件が向上します。
+ weight_adapt_factor: 2.0
+
+ alternative_time_cost: False # not in use yet
+#
+ optimization_activate: True
+ optimization_verbose: False
+
+######################## Parallel Planning in distinctive Topologies ########################
+
+#特徴的なトポロジで並列計画をアクティブ化します（複数の軌道が一度に最適化されるため、
+#より多くのCPUリソースが必要になります）
+ enable_homotopy_class_planning: False #True
+#別のスレッドで各軌道を計画するために、マルチスレッドをアクティブ化します
+ enable_multithreading: True
+
+#考慮される特徴的な軌跡の最大数を指定します（計算の労力を制限します）
+ max_number_classes: 2 #4
+
+#新しい候補者がw.r.tを持っている必要がある軌道のコストを指定します。 選択するために以前に選択された軌道（new_cost <old_cost * factorの場合の選択）。
+ selection_cost_hysteresis: 1.0
+
+#「最良の」候補を選択するためだけに、障害コスト項の追加スケーリング。
+ selection_obst_cost_scale: 100
+
+#「最良の」候補を選択するためだけの経由ポイントコスト条件の追加スケーリング。 バージョン0.4の新機能
+ selection_viapoint_cost_scale: 1.0
+
+#trueの場合、時間コスト（時間差の2乗の合計）は、遷移時間の合計（時間差の合計）に置き換えられます。
+ selection_alternative_time_cost: False #False
+
+#ロードマップグラフを作成するために生成されるサンプルの数を指定します
+ roadmap_graph_no_samples: 15
+
+#ランダムなキーポイント/ウェイポイントは、スタートとゴールの間の長方形の領域でサンプリングされます。 
+#その領域の幅をメートル単位で指定します。
+ roadmap_graph_area_width: 5
+
+#ホモトピークラスを区別するために使用される内部パラメーター（Hシグニチャー）をスケールします。 
+#警告：このパラメーターのみを減らしてください。ローカルコストマップで障害が多すぎるという問題が発生した場合は、
+#極端に低い値を選択しないでください。そうしないと、障害を互いに区別できません（0.2 <値<= 1）。
+ h_signature_prescaler: 0.3
+
+#実数部と複素数部の両方の差が指定されたしきい値を下回る場合、2つのHシグネチャは等しいと見なされます。
+ h_signature_threshold: 0.1
+
+#探索のために障害物（障害物）を考慮に入れるために、障害物見出しと目標見出しの間のスカラー積の値を指定します。
+ obstacle_heading_threshold: 0.45
+
+#特徴的な軌跡を探索するために作成されたグラフを視覚化する（rvizでマーカーメッセージを確認する）
+ visualize_hc_graph: False
+
+#trueの場合、さまざまなトポロジのすべての軌道が一連の経由ポイントにアタッチされます。それ以外の場合は、初期/グローバルプランと同じトポロジを共有する軌道のみが接続されます
+#（test_optim_nodeには影響しません）。 バージョン0.4の新機能
+ viapoints_all_candidates: true
+
+#新しい同等クラスへの切り替えが許可されるまでに期限切れになる必要がある期間を秒単位で指定します。
+ switching_blocking_period: 0.0

@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+
+<!-- 定数の設定 いじらないってこと -->
+  <!-- launchを設定 -->
+  <arg name="launch_data_gather" default="data_gather.launch"/>
+  <arg name="launch_gmapping_off_first" default="gmapping_off_first.launch"/>
+  <arg name="launch_map_save" default="map_save.launch"/>
+  <arg name="launch_person_navigation" default="person_navigation.launch"/>
+  <arg name="launch_uway_pointmaker" default="uway_pointmaker.launch"/>
+  <arg name="launch_waypoint_maker_auto" default="waypoint_maker_auto.launch"/>
+  <arg name="launch_autonomous" default="autonomous.launch"/>
+
+  <!-- pathを設定 -->
+  <arg name="tsukuba_path" default="$(find 2019_autonomous_mobile_robot)/full_data/tsukuba"/>
+  <arg name="nakanoshima_path" default="$(find 2019_autonomous_mobile_robot)/full_data/nakanoshima"/>
+
+
+<!-- ここを変更するだけ-->
+<!-- 変数の設定 外部からも指定して変更するといい-->
+  <!-- 使用するlaunchを設定 上から選ぶ-->
+  <arg name="launch_name" default="$(arg launch_autonomous)"/>
+  <!-- 今日の日付 -->
+  <arg name="date" default="0711"/>
+  <!-- データの名前(練習1など。。。) -->
+  <arg name="data_name" default="launch_autonomous"/>
+  <!-- 今回の使用するpath (中之島orつくば)-->
+  <arg name="thistime_path" default="$(arg nakanoshima_path)"/>
+　　<!-- mapの名前 -->
+  <arg name="map_name" default="map"/>
+　　<!-- bagの名前 -->
+  <arg name="bag_name" default="bag"/>
+　　<!-- waypointの名前 -->
+  <arg name="waypoint_name" default="waypoint"/>
+
+
+　　<!-- 最終的に使うパス -->
+  <arg name="base_path" default="$(arg thistime_path)/$(arg date)/$(arg data_name)"/>
+  
+  <!-- python -->
+  <node name="make_dir_py" pkg="2019_autonomous_mobile_robot" type="make_dir.py">
+    <param name="make_base_path" value="$(arg base_path)" />
+  </node>
+
+<!-- 使用するlaunchを呼び出す-->
+  <include file="$(find 2019_autonomous_mobile_robot)/launch/main_launch/$(arg launch_name)">
+    <!-- マップ用のパス-->
+    <arg name="map_path" default="$(arg base_path)/map/$(arg map_name).yaml"/>
+    <!-- 修正したマップ用のパス-->
+    <arg name="remap_path" default="$(arg base_path)/remap/re$(arg map_name).yaml"/>
+    <!-- waypointのパス-->
+    <arg name="waypoint_path" default="$(arg base_path)/waypoint/$(arg waypoint_name).txt"/>
+    <!-- 修正したwaypointのパス-->
+    <arg name="rewaypoint_path" default="$(arg base_path)/rewaypoint/re$(arg waypoint_name).txt"/>
+    <!-- データ収集bag用のパス-->
+    <arg name="data_gather_bag_path" default="$(arg base_path)/data_gather_bagfile/$(arg bag_name).bag"/>
+    <!-- 本番bag用のパス-->
+    <arg name="production_bag_path" default="$(arg base_path)/production_bagfile/production_$(arg bag_name).bag"/>
+  </include>
+
+</launch>

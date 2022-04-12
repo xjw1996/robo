@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+
+
+<launch>
+
+  <!-- 外部変更するための変数  ここでは使わないものもあるが変更するな-->
+  <!-- マップ用のパス-->
+  <arg name="map_path" />
+  <!-- 修正したマップ用のパス-->
+  <arg name="remap_path" />
+  <!-- waypointのパス-->
+  <arg name="waypoint_path" />
+  <!-- 修正したwaypointのパス-->
+  <arg name="rewaypoint_path" />
+  <!-- branchpointのパス-->
+  <arg name="branchpoint_path"/>
+  <!-- 最終的なwaypointのパス-->
+  <arg name="finalwaypoint_path"/>
+  <!-- branchpointのwaypointでのindexのパス-->
+  <arg name="branchpoint_index_path"/>
+  <!-- データ収集bag用のパス-->
+  <arg name="data_gather_bag_path" />
+  <!-- 本番bag用のパス-->
+  <arg name="production_bag_path" />
+  <arg name="use_ekf_filter" default="false"/>
+
+   <!--  sensor -->
+    <include file="$(find whill_navi)/launch/sensor/core_sensor.launch">
+     <arg name="use_camera" default="false" />
+     <arg name="use_gnss" default="false"/>
+     <arg name="use_velodyne" default="true"/>
+     <arg name="use_lrf" default="false"/>
+    </include>
+  <include file="$(find whill_navi)/launch/sensor/pointcloud_to_laserscan.launch"/>
+
+  <!-- WHILL -->
+  <include file="$(find whill_navi)/launch/kuaro_whill2.launch"/>
+
+
+
+   <!--   tf arg="x y z yaw pitch roll frame_id child_frame_id"  -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="laser_front_to_base_link" args="0.15 0.0 0.315 0.0 0.0 0.0  base_link laser_front" />
+  <!--node pkg="tf2_ros" type="static_transform_publisher" name="laser_back_to_base_link" args="-0.17 0.0 0.22 0.0 3.14159 0.0 base_link laser_back" /--> <!--下向き -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="laser_back_to_base_link" args="-0.17 0.0 0.22 3.14159 0.0 0.0 base_link laser_back" /> <!--上向き -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="velodyne_to_base_link" args="-0.24 0.0 1.65 0.0 0.0 0.0 base_link velodyne" /> <!--velodyne -->
+
+
+
+  <node pkg="map_server" type="map_server" name="map" args="$(arg remap_path)"/>
+  <!-- amcl -->
+  <node pkg="amcl" type="amcl" name="amcl">
+    <remap from="scan" to="velodyne_scan"/> <!-- scanを何にremapするかによって使用するデータが変わる.topic名を入れる velodyne_scanにすればvelodyneからscanにすればLRFから-->
+    <!-- フィルタ関連パラメータ -->
+    <!-- 最小のパーティクル数 -->
+    <param name="min_particles" value="500"/>
+    <!-- 最大のパーティクル数 (多いほど良い、PCのパフォーマンスに応じて設定 -->
+    <param name="max_particles" value="4000"/>
+    <!-- 実際の分布と推定された分布の間の最大エラー -->
+    <param name="kld_err" value="0.05"/>
+    <param name="kld_z" value="0.99"/>
+    <!-- フィルタの更新に必要な並進運動 (メートル単位)-->
+    <param name="update_min_d" value="0.2"/>
+    <!-- フィルタの更新に必要な回転運動 (ラジアン単位) -->
+    <param name="update_min_a" value="0.2"/>
+    <!-- 再サンプリング間隔 -->
+    <param name="resample_interval" value="1"/>
+    <!-- 変換許容時間 (秒単位) -->
+    <param name="transform_tolerance" value="0.1"/>
+    <!-- 指数の減少率 (slow average weight filter) -->
+    <param name="recovery_alpha_slow" value="0.0"/>
+    <!-- 指数の減少率 (fast average weight filter) -->
+    <param name="recovery_alpha_fast" value="0.0"/>
+    <!-- スキャンや移動経路の情報を視覚的に表示する周期 (10Hz = 0.1秒) -->
+    <param name="gui_publish_rate" value="1.0"/>
+    <!-- 距離センサパラメータ -->
+    <!-- レーザーの最大距離 (センサに合わせて設定する、メートル単位) -->
+    <param name="laser_max_range" value="100.0"/> <!-- 10??? 2016_09_26 -->
+    <!-- フィルタが更新されるときに使用されている最大のレーザービームの数 -->
+    <param name= "laser_max_beams" value= "30"/>
+    <!-- センサモデルのz_hit混合重み (micture weight) -->
+    <param name="laser_z_hit" value="0.5"/>
+    <!-- センサのz_short混合重み (micture weight) -->
+    <param name="laser_z_short" value="0.05"/>
+    <!-- センサのz_max混合重み (micture weight) -->
+    <param name="laser_z_max" value="0.05"/>
+    <!-- センサのz_rand混合重み (micture weight) -->
+    <param name="laser_z_rand" value="0.5"/>
+    <!-- センサのz_hitを使用したガウスモデルの標準偏差 -->
+    <param name="laser_sigma_hit" value="0.2"/>
+    <!-- センサのz_shortの指数関数パラメータ -->
+    <param name="laser_lambda_short" value="0.1"/>
+    <!-- likelihood_field方式センサのための障害物との最大距離 -->
+    <param name="laser_likelihood_max_dist" value="2.0"/>
+    <!-- センサタイプ (likelihood_fieldとbeam選択) -->
+    <param name="laser_model_type" value="likelihood_field"/>
+    <!-- オドメトリ関連パラメータ -->
+    <!-- ロボット移動方式の "diff"と "omni"が選択可能である。 -->
+    <param name="odom_model_type" value="diff"/>
+    <!-- 回転運動のとき、予想されるオドメトリの回転運動量推定ノイズ -->
+    <param name="odom_alpha1" value="0.2"/>
+    <!-- 並進運動のとき、予想されるオドメトリの回転運動量推定ノイズ -->
+    <param name="odom_alpha2" value="0.2"/>
+    <!-- 並進運動のとき、予想されるオドメトリの並進運動量推定ノイズ -->
+    <param name="odom_alpha3" value="0.8"/> <!-- 0.4 -->
+    <!-- 回転運動のとき、予想されるオドメトリの並進運動量推定ノイズ -->
+    <param name="odom_alpha4" value="0.2"/>
+    <!-- オドメトリフレームID -->
+    <param name="odom_frame_id" value="odom"/>
+    <param name="base_frame_id" value="base_link"/>
+    <param name="global_frame_id" value="map"/>
+  </node>
+  <!-- 障害物の検出 -->
+  <include file="$(find whill_navi)/launch/sensor/obstacle.launch"/>
+
+
+  <node pkg="yama_project" type="waypoint_pub_y" name="waypoint_pub_y">
+    <param name="read_file" value="$(arg rewaypoint_path)"/>
+  </node>
+  <arg name="data_folda_path" default="$(find yama_project)/data/0302"/>
+  <arg name="data_file_name" default="rein/no9"/>
+  <node name="yama_move" pkg="yama_project" type="yama_move" output='screen'>
+    <param name="GO_FUZY_FLAG"                 value="false"/>
+    <param name="GO_REIN_FLAG"                 value="true"/>
+    <param name="GO_POTE_FLAG"                 value="false"/>
+    <param name="GO_stright_FLAG"              value="false"/>
+    <param name="FUZY_VEL_FILE"                value="$(find yama_project)/Rules_my2_v.csv"/>
+    <param name="FUZY_ANG_FILE"                value="$(find yama_project)/Rules_my2_th.csv"/>
+    <param name="MAX_VEL"                      value="0.5"/>
+    <param name="MAX_CMD_VEL"                  value="0.4"/>
+    <param name="FUZY_MAX_VEL"                 value="1.0"/>
+    <param name="CMD_VEL_KAKERU"               value="1.0"/>
+    <param name="MIN_OBS_VEL"                  value="0.0"/>
+    <param name="QN"                           value="-0.02"/>
+    <param name="REIN_DT"                      value="1.0"/>
+    <param name="KUARO_SIZE"                   value="0.5"/>
+    <param name="POTENSIAL_PARAM_lg"           value="10"/><!-- 10 --><!-- 2 -->
+    <param name="POTENSIAL_PARAM_cg"           value="10"/><!-- 10 --><!-- 1 -->
+    <param name="POTENSIAL_PARAM_lo"           value="1"/><!-- 1 --><!-- 0.4 -->
+    <param name="POTENSIAL_PARAM_co"           value="15"/><!-- 15 --><!-- 3 -->
+    <param name="POTENSIAL_PARAM_drop_uo"      value="20"/>
+    <param name="POTENSIAL_PARAM_vmin"         value="0.1"/>
+    <param name="MAX_GOAL_DISTACE"             value="4.0"/>
+    <param name="KIDOU_FILE_PATH"              value="$(arg data_folda_path)/$(arg data_file_name).csv"/>
+    <param name="WAY_POINT_FILE"               value="$(arg rewaypoint_path)"/>
+  </node>
+  <node pkg="yama_project" type="obs_visual" name="obs_visual" />
+  
+  
+  <!-- rosbag -->
+  <!--node pkg="rosbag" type="record" name="test_record" args="-lz4 -O $(arg production_bag_path) /scan /scan_front /scan_back /velodyne_scan /velodyne_points /tf /odom_default /move_base/TebLocalPlannerROS/global_plan /move_base/TebLocalPlannerROS/local_plan /cmd_vel /serial_receive /serial_send /waypoint_publisher /joy /image_raw" output="screen"/-->
+  <!--node pkg="rosbag" type="record" name="test_record" args="-j -O $(arg production_bag_path) -a -x (.*)/image_raw(.*) " output="screen"/-->
+  <node pkg="rosbag" type="record" name="test_record" args=" -O $(arg production_bag_path) -a -x (.*)/compressed(.*) " output="screen"/>
+  <!-- rviz -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find whill_navi)/rviz/yama_move.rviz"/>
+
+</launch>
