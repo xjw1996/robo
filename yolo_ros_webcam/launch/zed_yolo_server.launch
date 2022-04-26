@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+  <node pkg="zed_yolo_ros" type="zed_server" name="zed_server" output="screen">
+    <param name="zed_timer_interval" value="0.2" />
+    <param name="frame_id" value="zed"/>
+    <param name="fixed_frame_id" value="base_link"/>
+    <param name="pub_image_topic" value="zed_image/image"/>
+    <param name="image_resolution_factor_" value="1.0"/>
+    <param name="time_out_box" value="0.1"/>
+    <param name="gomi_list" value="Bento Can Bottle"/>
+    <param name="person_name" value="jacket"/>
+    <param name="use_other_camera" value="false"/>
+    <param name="other_camera_topic_name" value="camera/image"/>
+    <param name="pub_object_topic_name" value="/yolo_object"/>
+  </node>
+
+  <!-- Use YOLOv3 -->
+  <arg name="network_param_file" default="$(find zed_yolo_ros)/config/yolov3-voc.yaml"/>
+  <arg name="image" default="/No_image/image" />
+  <arg name="yolo_config_path"   default="$(find zed_yolo_ros)/config/gomi/"/>
+  <arg name="yolo_weights_path"          default="$(find zed_yolo_ros)/config/gomi/"/>
+  <!-- Include main launch file -->
+  <include file="$(find zed_yolo_ros)/launch/darknet_ros.launch">
+    <arg name="network_param_file"    value="$(arg network_param_file)"/>
+    <arg name="image" value="$(arg image)" />
+    <arg name="yolo_config_path" value="$(arg yolo_config_path)" />
+    <arg name="yolo_weights_path" value="$(arg yolo_weights_path)" />
+  </include>
+</launch>

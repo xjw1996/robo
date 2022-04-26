@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<launch>
+  <master auto="start"/>
+  <node pkg="zed_yolo_ros" type="zed_yolo_ros" name="zed_yolo_ros" output="screen">
+    <param name="zed_timer_interval" value="0.2" />
+    <param name="frame_id" value="zed"/>
+    <param name="child_frame_id" value="base_link"/>
+    <param name="sub_BoundingBoxes_topic" value="/darknet_ros/bounding_boxes"/>
+    <param name="pub_image_topic" value="/zed_image"/>
+    <param name="image_width" value="640"/>
+    <param name="image_height" value="480"/>
+    <param name="time_out_box_miliseconds" value="150"/>
+  </node>
+
+  <!-- Use YOLOv3 -->
+  <arg name="network_param_file" default="$(find zed_yolo_ros)/config/yolov3-voc.yaml"/>
+  <arg name="image" default="/zed_image" />
+  <arg name="yolo_config_path"   default="$(find zed_yolo_ros)/config/gomi/"/>
+  <arg name="yolo_weights_path"          default="$(find zed_yolo_ros)/config/gomi/"/>
+  <!-- Include main launch file -->
+  <include file="$(find zed_yolo_ros)/launch/darknet_ros.launch">
+    <arg name="network_param_file"    value="$(arg network_param_file)"/>
+    <arg name="image" value="$(arg image)" />
+    <arg name="yolo_config_path" value="$(arg yolo_config_path)" />
+    <arg name="yolo_weights_path" value="$(arg yolo_weights_path)" />
+  </include>
+</launch>
