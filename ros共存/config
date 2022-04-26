@@ -1,0 +1,7 @@
+[profiles]
+  [[ros]]
+    custom_command = bash --init-file ~/.ros_setup.bash
+    use_custom_command = True
+  [[ros2]]
+    custom_command = bash --init-file ~/.ros2_setup.bash
+    use_custom_command = True

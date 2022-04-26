@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=ros2
+Exec=terminator -T "ros2" -p "ros2"
+Icon=/usr/share/icons/ros/ros2.png
+
+
